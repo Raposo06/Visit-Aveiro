@@ -2,6 +2,9 @@ plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
 
+    // Add the Google services Gradle plugin
+    id 'com.google.gms.google-services'
+
 }
 
 android {
@@ -82,5 +85,14 @@ dependencies {
     implementation("androidx.camera:camera-video:${camerax_version}")
     implementation("androidx.camera:camera-view:${camerax_version}")
     implementation("androidx.camera:camera-extensions:${camerax_version}")
+
+    // Import the Firebase BoM
+    implementation platform('com.google.firebase:firebase-bom:32.4.1')
+
+    // Dependencies for Firebase Authentication, Firestore, and Storage
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.firebaseui:firebase-ui-auth'
+    implementation 'com.google.firebase:firebase-firestore'
+    implementation 'com.google.firebase:firebase-storage'
 
 }

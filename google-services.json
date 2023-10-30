@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "100894398666",
+    "project_id": "visit-aveiro-bf424",
+    "storage_bucket": "visit-aveiro-bf424.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:100894398666:android:3b958e05450d024c927c33",
+        "android_client_info": {
+          "package_name": "com.example.baseapplication"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDDmzxNcD7UppBBRwAJGC5pQMMzIg2cU40"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
