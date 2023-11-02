@@ -8,6 +8,7 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -46,6 +47,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Row
@@ -59,6 +61,9 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TextField
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.RadioButton
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
@@ -82,8 +87,9 @@ import com.google.android.gms.location.LocationServices
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.PermissionStatus
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -248,7 +254,6 @@ fun DetailScreen(navController: NavController) {
                 }
             }
 
-
             Buttons.ImageButton(R.drawable.maps_pointer, "Where am I?",160.dp,160.dp) {
                 navController.navigate("maps")
 
@@ -356,21 +361,31 @@ fun MapScreen2() {
     LaunchedEffect(hasLocationPermission) {
         if (hasLocationPermission) {
             try {
-                // Check if location permission is granted
                 if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    // Now you can use await() since permission is granted
-                    val locationResult = fusedLocationClient.lastLocation.await()
-                    if (locationResult != null) {
-                        location = LatLng(locationResult.latitude, locationResult.longitude)
-                    } else {
-                        // Request location updates or handle null location
+                    val locationRequest = LocationRequest.create().apply {
+                        interval = 1000
+                        fastestInterval = 500
+                        priority = LocationRequest.PRIORITY_HIGH_ACCURACY
                     }
+
+                    val locationCallback = object : LocationCallback() {
+                        override fun onLocationResult(locationResult: LocationResult) {
+                            locationResult ?: return
+                            for (loc in locationResult.locations) {
+                                location = LatLng(loc.latitude, loc.longitude)
+                                //Log.d("Location", "Location Update: $location")
+                                break
+                            }
+                        }
+                    }
+
+                    fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
             }
         }
-    }
+        }
 
 
 
@@ -445,6 +460,8 @@ fun CameraApp() {
     //Texto
     val showDialog = remember { mutableStateOf(false) }
     val locationName = remember { mutableStateOf("") }
+    val categoryOptions = listOf("Lazer", "História")
+    val selectedCategory = remember { mutableStateOf(categoryOptions[0]) }
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarMessageState = remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -564,45 +581,68 @@ fun CameraApp() {
                 Text(text = "Nome do Local")
             },
             text = {
-                TextField(
-                    value = locationName.value,
-                    onValueChange = { locationName.value = it },
-                    label = { Text("Insira o nome do local") }
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showDialog.value = false
+                Column {
+                    TextField(
+                        value = locationName.value,
+                        onValueChange = { locationName.value = it },
+                        label = { Text("Insira o nome do local") }
+                    )
+                    Spacer(modifier = Modifier.height(50.dp)) // Ajuste a altura conforme necessário
 
-                        // Obter o nome do local inserido
-                        val nomeDoLocal = locationName.value
-                        locationName.value = ""
-
-                        // Criar um objeto com todas as informações
-                        val locationInfo = LocationInfo(
-                            name = nomeDoLocal,
-                            address = addressState.value.toString(),
-                            latitude = location!!.latitude,
-                            longitude = location!!.longitude,
-                            imageUrl = imageUrlState.value.toString()
+                    val categoryOptions = listOf("Lazer", "História")
+                    val (selectedCategory, onCategorySelected) = remember {
+                        mutableStateOf(
+                            ""
                         )
-
-                        // Salvar no Firestore
-                        val firestore = Firebase.firestore
-                        firestore.collection("Points of Interest")
-                            .add(locationInfo)
-                            .addOnSuccessListener {
-                                snackbarMessageState.value = "Local adicionado com sucesso!"
-                            }
-                            .addOnFailureListener {
-                                snackbarMessageState.value = "Erro ao adicionar local."
-                            }
                     }
-                ) {
-                    Text("Confirmar")
+
+                    Text("Categoria:") // Certifique-se de que este Text tenha um argumento 'text'
+                    categoryOptions.forEach { category ->
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            RadioButton(
+                                selected = selectedCategory == category,
+                                onClick = { onCategorySelected(category) }
+                            )
+                            Text(category) // Certifique-se de que este Text tenha um argumento 'text'
+                        }
+                    }
                 }
-    })
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showDialog.value = false
+
+                            // Obter o nome do local inserido
+                            val nomeDoLocal = locationName.value
+                            locationName.value = ""
+                            val localType = selectedCategory.value
+                            // Criar um objeto com todas as informações
+                            val locationInfo = LocationInfo(
+                                name = nomeDoLocal,
+                                address = addressState.value.toString(),
+                                latitude = location!!.latitude,
+                                longitude = location!!.longitude,
+                                imageUrl = imageUrlState.value.toString(),
+                                localType = localType
+                            )
+
+                            // Salvar no Firestore
+                            val firestore = Firebase.firestore
+                            firestore.collection("Points of Interest")
+                                .add(locationInfo)
+                                .addOnSuccessListener {
+                                    snackbarMessageState.value = "Local adicionado com sucesso!"
+                                }
+                                .addOnFailureListener {
+                                    snackbarMessageState.value = "Erro ao adicionar local."
+                                }
+                        }
+                    ) {
+                        Text("Confirmar")
+                    }
+                })
+
         }
     val snackbarMessage = snackbarMessageState.value
     if (snackbarMessage != null) {
@@ -623,9 +663,14 @@ fun CameraApp() {
 
 
 
+
+
+
+    @RequiresApi(Build.VERSION_CODES.R)
     @Preview(showBackground = true)
     @Composable
     fun WelcomeScreenPreview() {
         //WelcomeScreen(onBeginClick = {})
-        DetailScreen(navController = rememberNavController())
+        //DetailScreen(navController = rememberNavController())
+        CameraApp()
     }
