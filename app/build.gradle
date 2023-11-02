@@ -42,7 +42,7 @@ android {
         viewBinding true
     }
     composeOptions {
-        kotlinCompilerExtensionVersion '1.4.3'
+        kotlinCompilerExtensionVersion '1.5.0' //old:1.3.2
     }
     packagingOptions {
         resources {
@@ -94,6 +94,7 @@ dependencies {
 
     // Dependencies for Firebase Authentication, Firestore, and Storage
     implementation 'com.google.firebase:firebase-auth'
+    //implementation 'com.google.firebase:firebase-auth-ktx'
     //implementation 'com.firebaseui:firebase-ui-auth'
     implementation 'com.google.firebase:firebase-firestore'
     implementation 'com.google.firebase:firebase-storage'
