@@ -5,13 +5,9 @@ import CameraUtility
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.location.Geocoder
-import android.location.Location
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -50,11 +46,15 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -68,7 +68,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import java.io.IOException
 import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
-import com.example.baseapplication.effects.LocationInfo
+import com.example.baseapplication.ui.components.LocationInfo
 import com.example.baseapplication.ui.theme.Buttons
 import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.*
@@ -76,16 +76,13 @@ import com.google.android.gms.location.LocationServices
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.rememberPermissionState
 import com.google.accompanist.permissions.PermissionStatus
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
-import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.ktx.storage
 import kotlinx.coroutines.tasks.await
-import java.io.ByteArrayOutputStream
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
-import androidx.lifecycle.lifecycleScope
 
 
 class MainActivity : ComponentActivity() {
@@ -319,6 +316,16 @@ fun MapScreen2() {
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     var location by remember { mutableStateOf<LatLng?>(null) }
     var hasLocationPermission by remember { mutableStateOf(false) }
+    val pointsofinterest = remember { mutableStateOf<List<LocationInfo>>(listOf()) }
+
+    LaunchedEffect(Unit) {
+        val firestore = Firebase.firestore
+        firestore.collection("Points of Interest")
+            .get()
+            .addOnSuccessListener { documents ->
+                pointsofinterest.value = documents.mapNotNull { it.toObject(LocationInfo::class.java) }
+            }
+    }
 
     RequestLocationPermission(onPermissionGranted = {
         hasLocationPermission = true
@@ -342,7 +349,6 @@ fun MapScreen2() {
             }
         }
     }
-
     var cameraPositionState: CameraPositionState? = null
 
     if (location != null) {
@@ -361,6 +367,13 @@ fun MapScreen2() {
                     state = MarkerState(position = it),
                     title = "Localização Geocodificada",
                     snippet = "addressString"
+                )
+            }
+            pointsofinterest.value.forEach { pointofinterest ->
+                Marker(
+                    state = MarkerState(position = LatLng(pointofinterest.latitude, pointofinterest.longitude)),
+                    title = pointofinterest.name,
+                    snippet = pointofinterest.address
                 )
             }
         }
@@ -397,6 +410,7 @@ fun RequestLocationPermission(onPermissionGranted: () -> Unit) {
 fun CameraApp() {
     val context = LocalContext.current
     val cameraUtility = CameraUtility(context)
+    val imageUrlState = remember { mutableStateOf<String?>(null) }  // Estado para armazenar o URL da imagem
     //Location
     val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
     val locationState = remember { mutableStateOf<LatLng?>(null) }
@@ -405,6 +419,10 @@ fun CameraApp() {
     //Texto
     val showDialog = remember { mutableStateOf(false) }
     val locationName = remember { mutableStateOf("") }
+    val snackbarHostState = remember { SnackbarHostState() }
+    val snackbarMessageState = remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+
 
     // Verificar permissões
     val cameraPermissionState = rememberPermissionState(Manifest.permission.CAMERA)
@@ -429,11 +447,11 @@ fun CameraApp() {
             val storageRef = storage.reference
             val imageRef = storageRef.child("images/${imageUri?.lastPathSegment}")
             val uploadTask = imageRef.putFile(imageUri!!)
-            var imageUrl: String? = null
+
             // Listener para o status do upload
             uploadTask.addOnSuccessListener {
                 imageRef.downloadUrl.addOnSuccessListener { uri ->
-                    imageUrl = uri.toString()
+                    imageUrlState.value = uri.toString()  // Armazenar o URL da imagem no estado
                 }
             }.addOnFailureListener { e ->
 
@@ -442,20 +460,30 @@ fun CameraApp() {
         }
     }
 
-    Column(modifier = Modifier.padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize() // Faz a coluna ocupar todo o espaço disponível
+            .padding(48.dp),
+        verticalArrangement = Arrangement.Center, // Alinha os elementos na parte inferior
+        horizontalAlignment = Alignment.CenterHorizontally, // Centraliza os elementos horizontalment
+
+    ) {
         if (isPermissionGranted) {
-            Button(
+            Buttons.ImageButton(
+                image = R.drawable.camera, // Substitua pelo ID da sua imagem
+                description = "Take Picture",
+                width = 200.dp, // Substitua pela largura desejada
+                height = 200.dp, // Substitua pela altura desejada
                 onClick = {
                     cameraUtility.createImageUri()?.let { uri ->
                         takePictureLauncher.launch(uri)
                     }
                 }
-            ) {
-                Text("Take Picture")
-            }
+            )
         } else {
             Text("Camera permission is required.")
         }
+
     }
 
     RequestLocationPermission(onPermissionGranted = {
@@ -501,6 +529,7 @@ fun CameraApp() {
     }
 
     if (showDialog.value) {
+        SnackbarHost(hostState = snackbarHostState)
         AlertDialog(
             onDismissRequest = {
                 showDialog.value = false
@@ -519,8 +548,10 @@ fun CameraApp() {
                 Button(
                     onClick = {
                         showDialog.value = false
+
                         // Obter o nome do local inserido
                         val nomeDoLocal = locationName.value
+                        locationName.value = ""
 
                         // Criar um objeto com todas as informações
                         val locationInfo = LocationInfo(
@@ -528,66 +559,41 @@ fun CameraApp() {
                             address = addressState.value.toString(),
                             latitude = location!!.latitude,
                             longitude = location!!.longitude,
-                            imageUrl = imageUrl
+                            imageUrl = imageUrlState.value.toString()
                         )
 
                         // Salvar no Firestore
                         val firestore = Firebase.firestore
-                        firestore.collection("locations")
+                        firestore.collection("Points of Interest")
                             .add(locationInfo)
                             .addOnSuccessListener {
-                                // As informações foram adicionadas com sucesso ao Firestore
-                                // Você pode adicionar aqui uma mensagem de sucesso ou navegar para outra tela
+                                snackbarMessageState.value = "Local adicionado com sucesso!"
                             }
                             .addOnFailureListener {
-                                // Houve um erro ao adicionar as informações ao Firestore
-                                // Você pode adicionar aqui uma mensagem de erro ou tratamento de exceção
+                                snackbarMessageState.value = "Erro ao adicionar local."
                             }
                     }
                 ) {
                     Text("Confirmar")
                 }
-            })
+    })
+        }
+    val snackbarMessage = snackbarMessageState.value
+    if (snackbarMessage != null) {
+        Snackbar(
+            action = {
+                Button(onClick = { snackbarMessageState.value = null }) {
+                    Text("OK")
+                }
+            },
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(text = snackbarMessage)
+        }
     }
 
 
-
-
-    val locationInfo = if (location != null) {
-        LocationInfo(
-            name = locationName,
-            address = locationAddress,
-            latitude = location.latitude,
-            longitude = location.longitude,
-            imageUrl = imageUrl
-        )
-    } else {
-
-    }
-
-    val firestore = Firebase.firestore
-
-    firestore.collection("locations")
-        .add(locationInfo)
-        .addOnSuccessListener {
-            // As informações foram adicionadas com sucesso ao Firestore
-        }
-        .addOnFailureListener {
-            // Houve um erro ao adicionar as informações ao Firestore
-        }
-
 }
-
-private suspend fun uploadImageAndGetUrl(imageUri: Uri): String {
-    val storage = Firebase.storage
-    val storageRef = storage.reference
-    val imageRef = storageRef.child("images/${imageUri.lastPathSegment}")
-
-    val uploadTask = imageRef.putFile(imageUri).await()
-    val downloadUrl = imageRef.downloadUrl.await()
-    return downloadUrl.toString()
-}
-
 
 
 
