@@ -1,15 +1,24 @@
 package com.example.baseapplication.ui.screens.curator
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,11 +31,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.baseapplication.models.PointOfInterestModel
 
 
 @Composable
 fun CuradorZoneScreen(
     noUserAction: () -> Unit,
+    onAddInterestPointClick: () -> Unit,
     viewModel: CuratorZoneViewModel = viewModel()
 ) {
     val uiState by viewModel.uiState
@@ -40,17 +51,39 @@ fun CuradorZoneScreen(
     }
     CuradorZoneContent(
         uiState.user?.displayName ?: "No User",
-        viewModel::onSignOutClick
+        viewModel::onSignOutClick,
+        poiList = uiState.points,
+        onAddInterestPointClick,
+        // todo: howver dont think it needs to be implemented, there is no purpose
+        onPoIClick = {Log.d("CuratorPoIItem","on poi click")},
+        //todo
+        onGoToLocationClick = { Log.d("CuratorPoIItem","on location click") },
+        onEditClick = viewModel::updatePoIEntry,
+        onDeleteClick = viewModel::deletePoIEntry,
     )
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CuradorZoneContent(
     userDisplayName: String,
-    onSignOutClick: () -> Unit
+    onSignOutClick: () -> Unit,
+
+    poiList: List<PointOfInterestModel>,
+    onAddInterestPointClick: () -> Unit,
+
+    onPoIClick: (PointOfInterestModel) -> Unit,
+    onGoToLocationClick: (PointOfInterestModel) -> Unit,
+    onEditClick: (PointOfInterestModel) -> Unit,
+    onDeleteClick: (PointOfInterestModel) -> Unit,
 ) {
-    Column {
+    //TopAppBar(title = { Text(text = "Zona Curador") })
+    Column(
+        Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState()),
+    ) {
         // Card to display user info and allow signout
         Card(
             colors = CardDefaults.cardColors(
@@ -59,13 +92,18 @@ fun CuradorZoneContent(
             elevation = CardDefaults.cardElevation(
                 defaultElevation = 6.dp
             ),
-            modifier = Modifier.fillMaxWidth().padding(4.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(4.dp)
             ) {
 
             Row (
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(4.dp).padding(horizontal = 4.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp)
+                    .padding(horizontal = 4.dp),
             ){
                 Text(text = userDisplayName, fontSize = 30.sp)
                 Button(onClick = onSignOutClick) {
@@ -74,12 +112,40 @@ fun CuradorZoneContent(
             }
         }
 
-        
+        Spacer(modifier = Modifier.size(8.dp))
+
+        Row (
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ){
+            Text(text = "Pontos de Interesse", fontSize = 20.sp)
+            Button(onClick = onAddInterestPointClick) {
+                Icon(imageVector  = Icons.Default.Add, "Add point of interest")
+            }
+        }
+        Divider(color = MaterialTheme.colorScheme.primary, thickness = 1.dp,)
+
+        //todo: implment onClick functions
+        poiList.forEach {
+            CuratorPoIItem(
+                poi = it,
+                onPoIClick = onPoIClick,
+                onGoToLocationClick = onGoToLocationClick,
+                onEditClick = onEditClick,
+                onDeleteClick = onDeleteClick,
+                )
+        }
+
     }
 }
+
+
 
 @Preview
 @Composable
 fun CuratorZoneContentPreview() {
-    CuradorZoneContent("John Doe", { print("OnSignoutclick") })
+    CuradorZoneContent("John Doe", { print("OnSignoutclick") }, listOf(),{ print("onAddInterestPointClick") } ,{}, {}, {}, {})
 }

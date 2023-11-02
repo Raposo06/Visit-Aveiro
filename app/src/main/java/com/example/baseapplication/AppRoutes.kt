@@ -7,4 +7,5 @@ enum class AppRoutes {
 
     // CURATOR SCREENS
     CURATOR_MAINSCREEN,
+    CURATOR_ADDPOI,
 }

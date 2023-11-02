@@ -139,11 +139,16 @@ fun AppNavigator() {
         }
 
         composable(AppRoutes.CURATOR_MAINSCREEN.name){
-            CuradorZoneScreen(noUserAction = { navController.navigate(AppRoutes.AUTH_SIGNIN.name){
+            CuradorZoneScreen(
+                noUserAction = { navController.navigate(AppRoutes.AUTH_SIGNIN.name){
                 popUpTo(AppRoutes.CURATOR_MAINSCREEN.name) {
                     inclusive = true
                 }
-            } })
+            }},
+                onAddInterestPointClick = {
+                    navController.navigate("camera")
+                }
+            )
         }
 
         composable(AppRoutes.AUTH_SIGNIN.name){
