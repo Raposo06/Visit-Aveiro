@@ -10,6 +10,7 @@ import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException
 import com.google.firebase.auth.FirebaseAuthUserCollisionException
 import com.google.firebase.auth.FirebaseAuthWeakPasswordException
 import com.google.firebase.auth.auth
+import com.google.firebase.auth.userProfileChangeRequest
 import kotlinx.coroutines.launch
 
 
@@ -17,14 +18,20 @@ class SignUpViewModel : ViewModel() {
     private val firebaseAuth = Firebase.auth
     private val TAG = "SignInViewModel"
 
-    var uiState = mutableStateOf(SiginUiState())
+    var uiState = mutableStateOf(SignupUiState())
         private set
 
+    private val name
+        get() = uiState.value.name
     private val email
         get() = uiState.value.email
     private val password
         get() = uiState.value.password
 
+
+    fun onNameChange(newValue: String) {
+        uiState.value = uiState.value.copy(name = newValue)
+    }
     fun onEmailChange(newValue: String) {
         uiState.value = uiState.value.copy(email = newValue)
     }
@@ -34,6 +41,12 @@ class SignUpViewModel : ViewModel() {
     }
 
     fun onSignUpClick(onSucess: () -> Unit) {
+        if (name.isBlank()) {
+            Log.e(TAG, "onSignInClick: empty name")
+            uiState.value = uiState.value.copy(errMsg = "empty name")
+            return
+        }
+
         if (!email.isValidEmail()) {
             Log.e(TAG, "onSignInClick: invalid email")
             uiState.value = uiState.value.copy(errMsg = "invalid email")
@@ -54,6 +67,13 @@ class SignUpViewModel : ViewModel() {
                     // Sign in success, update UI with the signed-in user's information
                     Log.d(TAG, "signInWithEmail:success")
                     uiState.value = uiState.value.copy(errMsg = "")
+                    firebaseAuth.currentUser?.updateProfile(userProfileChangeRequest {
+                        displayName= name
+                    }
+                    )?.addOnCompleteListener { if (task.isSuccessful){
+                        Log.i(TAG, "onSignUpClick: profile update with success")
+                    }
+                    }
                     onSucess()
                 } else {
                     Log.i(TAG, "onSignUpClick: ", task.exception)
@@ -80,6 +100,7 @@ class SignUpViewModel : ViewModel() {
 }
 
 data class SignupUiState(
+    val name:String ="",
     val email: String = "",
     val password: String = "",
     val errMsg: String = "",

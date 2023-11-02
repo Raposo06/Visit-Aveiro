@@ -40,6 +40,7 @@ fun SignUpScreen(
 
     SignUpScreenScreenContent(
         uiState = uiState,
+        onNameChange= viewModel::onNameChange,
         onEmailChange = viewModel::onEmailChange,
         onPasswordChange = viewModel::onPasswordChange,
         onSignUpClick = {viewModel.onSignUpClick(popUpScreen) },
@@ -51,7 +52,8 @@ fun SignUpScreen(
 @Composable
 fun SignUpScreenScreenContent(
     modifier: Modifier = Modifier,
-    uiState: SiginUiState,
+    uiState: SignupUiState,
+    onNameChange: (String) -> Unit,
     onEmailChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onSignUpClick: () -> Unit,
@@ -72,7 +74,9 @@ fun SignUpScreenScreenContent(
         if(uiState.errMsg.isNotEmpty()){
             Text(text = uiState.errMsg)
         }
-        
+
+        TextField(uiState.name,  onNameChange, label = { Text("Name") })
+
         TextField(uiState.email,  onEmailChange, label = { Text("Email") })
         TextField(
             value = uiState.password,
