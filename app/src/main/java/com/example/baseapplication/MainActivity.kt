@@ -461,7 +461,7 @@ fun CameraApp() {
     val showDialog = remember { mutableStateOf(false) }
     val locationName = remember { mutableStateOf("") }
     val categoryOptions = listOf("Lazer", "História")
-    val selectedCategory = remember { mutableStateOf(categoryOptions[0]) }
+    var (selectedCategory, onCategorySelected) = remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarMessageState = remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
@@ -572,6 +572,7 @@ fun CameraApp() {
     }
 
     if (showDialog.value) {
+
         SnackbarHost(hostState = snackbarHostState)
         AlertDialog(
             onDismissRequest = {
@@ -589,12 +590,7 @@ fun CameraApp() {
                     )
                     Spacer(modifier = Modifier.height(50.dp)) // Ajuste a altura conforme necessário
 
-                    val categoryOptions = listOf("Lazer", "História")
-                    val (selectedCategory, onCategorySelected) = remember {
-                        mutableStateOf(
-                            ""
-                        )
-                    }
+
 
                     Text("Categoria:") // Certifique-se de que este Text tenha um argumento 'text'
                     categoryOptions.forEach { category ->
@@ -603,7 +599,7 @@ fun CameraApp() {
                                 selected = selectedCategory == category,
                                 onClick = { onCategorySelected(category) }
                             )
-                            Text(category) // Certifique-se de que este Text tenha um argumento 'text'
+                            Text(text = category) // Certifique-se de que este Text tenha um argumento 'text'
                         }
                     }
                 }
@@ -614,12 +610,12 @@ fun CameraApp() {
                             showDialog.value = false
 
                             // Obter o nome do local inserido
-                            val nomeDoLocal = locationName.value
+                            val localName = locationName.value
                             locationName.value = ""
-                            val localType = selectedCategory.value
+                            val localType = selectedCategory.toString()
                             // Criar um objeto com todas as informações
                             val locationInfo = LocationInfo(
-                                name = nomeDoLocal,
+                                name = localName,
                                 address = addressState.value.toString(),
                                 latitude = location!!.latitude,
                                 longitude = location!!.longitude,
