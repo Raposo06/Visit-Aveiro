@@ -47,6 +47,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.AlertDialog
@@ -56,6 +57,8 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.TextField
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavController
@@ -70,6 +73,9 @@ import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
 import com.example.baseapplication.ui.components.LocationInfo
 import com.example.baseapplication.ui.theme.Buttons
+import com.example.baseapplication.ui.screens.auth.SignInScreen
+import com.example.baseapplication.ui.screens.auth.SignUpScreen
+import com.example.baseapplication.ui.screens.curator.CuradorZoneScreen
 import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.*
 import com.google.android.gms.location.LocationServices
@@ -124,6 +130,22 @@ fun AppNavigator() {
         }
         composable("camera"){
             CameraApp()
+        }
+
+        composable(AppRoutes.CURATOR_MAINSCREEN.name){
+            CuradorZoneScreen(noUserAction = { navController.navigate(AppRoutes.AUTH_SIGNIN.name){
+                popUpTo(AppRoutes.CURATOR_MAINSCREEN.name) {
+                    inclusive = true
+                }
+            } })
+        }
+
+        composable(AppRoutes.AUTH_SIGNIN.name){
+            SignInScreen(popUpScreen = { navController.navigateUp() }, onSignupClick = {navController.navigate(AppRoutes.AUTH_SIGNUP.name)})
+        }
+
+        composable(AppRoutes.AUTH_SIGNUP.name){
+            SignUpScreen(popUpScreen = { navController.navigateUp() })
         }
 
     }
@@ -203,10 +225,11 @@ fun DetailScreen(navController: NavController) {
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
         Column(
             verticalArrangement = Arrangement.Top,
-            horizontalAlignment = Alignment.Start,
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 80.dp)
+                .verticalScroll(rememberScrollState())
         ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -223,17 +246,8 @@ fun DetailScreen(navController: NavController) {
                     Log.d("ImageButton", "Culture Button Clicked!")
 
                 }
-                }
             }
 
-
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 270.dp)
-        ){
 
             Buttons.ImageButton(R.drawable.maps_pointer, "Where am I?",160.dp,160.dp) {
                 navController.navigate("maps")
@@ -245,6 +259,14 @@ fun DetailScreen(navController: NavController) {
             Buttons.ImageButton(R.drawable.events, "Events",280.dp,160.dp) {
                 // Handle button click
                 Log.d("ImageButton", "Events Button Clicked!")
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))  // Adiciona espaço vertical entre os botões
+
+            Buttons.ImageButton(R.drawable.events, "Zona Curador",280.dp,160.dp) {
+                // Handle button click
+                navController.navigate(AppRoutes.CURATOR_MAINSCREEN.name)
+                Log.d("ImageButton", "Zona Curador Clicked!")
             }
         }
     }
@@ -349,6 +371,10 @@ fun MapScreen2() {
             }
         }
     }
+
+
+
+
     var cameraPositionState: CameraPositionState? = null
 
     if (location != null) {
