@@ -90,6 +90,10 @@ import com.google.accompanist.permissions.PermissionStatus
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationSettingsRequest
+import com.google.android.gms.location.LocationSettingsResponse
+import com.google.android.gms.location.SettingsClient
+import com.google.android.gms.tasks.Task
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.storage.ktx.storage
@@ -169,7 +173,7 @@ fun WelcomeScreen(onBeginClick: () -> Unit) {
     Box(modifier = Modifier.fillMaxSize()) {
 
         Image(
-            painter = painterResource(id = R.drawable.city_of_aveiro), // Replace 'your_image_name' with the name of your image
+            painter = painterResource(id = R.drawable.city_of_aveiro),
             contentDescription = "Background Image",
             modifier = Modifier.fillMaxSize(),
             contentScale = ContentScale.Crop // Crop the image to fill the screen
@@ -233,7 +237,19 @@ fun WelcomeScreen(onBeginClick: () -> Unit) {
 
 @Composable
 fun DetailScreen(navController: NavController) {
+
     Surface(modifier = Modifier.fillMaxSize(), color = Color.Black) {
+        Image(
+            painter = painterResource(id = R.drawable.city_of_aveiro),
+            contentDescription = "Background Image",
+            modifier = Modifier.fillMaxSize(),
+            contentScale = ContentScale.Crop // Crop the image to fill the screen
+        )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Black.copy(alpha = 0.6f))
+        )
         Column(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -242,12 +258,14 @@ fun DetailScreen(navController: NavController) {
                 .padding(top = 80.dp)
                 .verticalScroll(rememberScrollState())
         ) {
+
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
             ) {
+
                 Buttons.ImageButton(R.drawable.leisure, "Lazer",160.dp,160.dp) {
                     navController.navigate("camera")
                     // Handle button click
@@ -259,21 +277,29 @@ fun DetailScreen(navController: NavController) {
                 }
             }
 
-            Buttons.ImageButton(R.drawable.maps_pointer, "Where am I?",160.dp,160.dp) {
-                navController.navigate("maps")
-
-                Log.d("ImageButton", "Maps Button Clicked!")
-            }
-            Spacer(modifier = Modifier.height(20.dp))  // Adiciona espaço vertical entre os botões
-
+            /*
             Buttons.ImageButton(R.drawable.events, "Events",280.dp,160.dp) {
                 // Handle button click
                 Log.d("ImageButton", "Events Button Clicked!")
             }
 
             Spacer(modifier = Modifier.height(20.dp))  // Adiciona espaço vertical entre os botões
+*/
+            Buttons.ImageButton(R.drawable.gastronomy, "Gastronomy",160.dp,160.dp) {
+                // Handle button click
+                Log.d("ImageButton", "Gastronomy Button Clicked!")
+            }
 
-            Buttons.ImageButton(R.drawable.events, "Zona Curador",280.dp,160.dp) {
+            Spacer(modifier = Modifier.height(20.dp))  // Adiciona espaço vertical entre os botões
+
+            Buttons.ImageButton(R.drawable.maps_pointer, "Where am I?",280.dp,160.dp) {
+                navController.navigate("maps")
+
+                Log.d("ImageButton", "Maps Button Clicked!")
+            }
+            Spacer(modifier = Modifier.height(20.dp))  // Adiciona espaço vertical entre os botões
+
+            Buttons.ImageButton(R.drawable.curador, "Zona Curador",280.dp,160.dp) {
                 // Handle button click
                 navController.navigate(AppRoutes.CURATOR_MAINSCREEN.name)
                 Log.d("ImageButton", "Zona Curador Clicked!")
@@ -286,7 +312,6 @@ fun DetailScreen(navController: NavController) {
 
 @Composable
 fun MapScreen() {
-
 
     val context = LocalContext.current
     val addressString = "Rua Azurara, Mangualde"
@@ -332,7 +357,7 @@ fun MapScreen() {
             location?.let {
                 Marker(
                     state = MarkerState(position = it),
-                    title = "Localização Geocodificada",
+                    title = "You're here!",
                     snippet = addressString
                 )
             }
@@ -372,19 +397,26 @@ fun MapScreen2() {
                         fastestInterval = 500
                         priority = LocationRequest.PRIORITY_HIGH_ACCURACY
                     }
+                    val builder = LocationSettingsRequest.Builder().addLocationRequest(locationRequest)
+                    val client: SettingsClient = LocationServices.getSettingsClient(context)
+                    val task: Task<LocationSettingsResponse> = client.checkLocationSettings(builder.build())
 
-                    val locationCallback = object : LocationCallback() {
-                        override fun onLocationResult(locationResult: LocationResult) {
-                            locationResult ?: return
-                            for (loc in locationResult.locations) {
-                                location = LatLng(loc.latitude, loc.longitude)
-                                //Log.d("Location", "Location Update: $location")
-                                break
+                    Log.d("Location", "Location Update: $locationRequest")
+                    task.addOnSuccessListener {
+                        val locationCallback = object : LocationCallback() {
+                            override fun onLocationResult(locationResult: LocationResult) {
+                                locationResult ?: return
+                                for (loc in locationResult.locations) {
+                                    location = LatLng(loc.latitude, loc.longitude)
+                                    Log.d("Location", "Location Update: $location")
+                                    break
+                                }
                             }
                         }
+
+                        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
                     }
 
-                    fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -411,8 +443,7 @@ fun MapScreen2() {
             location?.let {
                 Marker(
                     state = MarkerState(position = it),
-                    title = "Localização Geocodificada",
-                    snippet = "addressString"
+                    title = "You're here!"
                 )
             }
             pointsofinterest.value.forEach { pointofinterest ->
@@ -441,7 +472,7 @@ fun RequestLocationPermission(onPermissionGranted: () -> Unit) {
             }
             is PermissionStatus.Denied -> {
                 if ((locationPermissionState.status as PermissionStatus.Denied).shouldShowRationale) {
-                    // Here you can show UI to explain why the permission is needed
+
                 } else {
                     locationPermissionState.launchPermissionRequest()
                 }
@@ -466,7 +497,7 @@ fun CameraApp() {
     val showDialog = remember { mutableStateOf(false) }
     val locationName = remember { mutableStateOf("") }
     val categoryOptions = listOf("Lazer", "História")
-    var (selectedCategory, onCategorySelected) = remember { mutableStateOf<String?>(null) }
+    val (selectedCategory, onCategorySelected) = remember { mutableStateOf<String?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val snackbarMessageState = remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()

@@ -42,20 +42,20 @@ class SignUpViewModel : ViewModel() {
 
     fun onSignUpClick(onSucess: () -> Unit) {
         if (name.isBlank()) {
-            Log.e(TAG, "onSignInClick: empty name")
-            uiState.value = uiState.value.copy(errMsg = "empty name")
+            Log.e(TAG, "onSignInClick: Empty name")
+            uiState.value = uiState.value.copy(errMsg = "Empty name")
             return
         }
 
         if (!email.isValidEmail()) {
-            Log.e(TAG, "onSignInClick: invalid email")
-            uiState.value = uiState.value.copy(errMsg = "invalid email")
+            Log.e(TAG, "onSignInClick: Invalid email")
+            uiState.value = uiState.value.copy(errMsg = "Invalid email")
             return
         }
 
         if (password.isBlank()) {
-            Log.e(TAG, "onSignInClick: empty password")
-            uiState.value = uiState.value.copy(errMsg = "empty password")
+            Log.e(TAG, "onSignInClick: Empty password")
+            uiState.value = uiState.value.copy(errMsg = "Empty password")
             return
         }
 
@@ -71,7 +71,7 @@ class SignUpViewModel : ViewModel() {
                         displayName= name
                     }
                     )?.addOnCompleteListener { if (task.isSuccessful){
-                        Log.i(TAG, "onSignUpClick: profile update with success")
+                        Log.i(TAG, "onSignUpClick: Profile update with success")
                     }
                     }
                     onSucess()
