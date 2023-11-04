@@ -46,9 +46,11 @@ fun CuradorZoneScreen(
     LaunchedEffect(uiState.user) {
         if (uiState.user == null) {
             noUserAction()
+        } else {
+            //viewModel.getEntries()
         }
-
     }
+
     CuradorZoneContent(
         uiState.user?.displayName ?: "No User",
         viewModel::onSignOutClick,
@@ -128,14 +130,13 @@ fun CuradorZoneContent(
         }
         Divider(color = MaterialTheme.colorScheme.primary, thickness = 1.dp,)
 
-        //todo: implment onClick functions
         poiList.forEach {
             CuratorPoIItem(
                 poi = it,
                 onPoIClick = onPoIClick,
                 onGoToLocationClick = onGoToLocationClick,
                 onEditClick = onEditClick,
-                onDeleteClick = onDeleteClick,
+                onDeleteClick= onDeleteClick
                 )
         }
 

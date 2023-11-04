@@ -76,11 +76,15 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import java.io.IOException
 import androidx.compose.runtime.*
 import androidx.core.content.ContextCompat
+import com.example.baseapplication.models.PointOfInterestTypeEnum
 import com.example.baseapplication.ui.components.LocationInfo
 import com.example.baseapplication.ui.theme.Buttons
 import com.example.baseapplication.ui.screens.auth.SignInScreen
 import com.example.baseapplication.ui.screens.auth.SignUpScreen
 import com.example.baseapplication.ui.screens.curator.CuradorZoneScreen
+import com.example.baseapplication.ui.screens.curator.CuratorAddPoIScreen
+import com.example.baseapplication.ui.screens.listings.ListScreen
+import com.example.baseapplication.ui.screens.map.MapScreen3
 import com.google.maps.android.compose.CameraPositionState
 import kotlinx.coroutines.*
 import com.google.android.gms.location.LocationServices
@@ -113,6 +117,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+
                     AppNavigator()
                 }
             }
@@ -125,7 +130,8 @@ class MainActivity : ComponentActivity() {
 fun AppNavigator() {
     val navController = rememberNavController()
 
-    NavHost(navController = navController, startDestination = "welcome") {
+    // todo: change initial route back to welcome page
+    NavHost(navController = navController, startDestination = "details") {
         composable("welcome") {
             WelcomeScreen(onBeginClick = {
                 navController.navigate("details")
@@ -142,6 +148,12 @@ fun AppNavigator() {
             CameraApp()
         }
 
+        composable(AppRoutes.LAZER_SCREEN.name){
+            ListScreen(listType = PointOfInterestTypeEnum.Lazer)
+        }
+
+        // todo create routes for the other list types
+
         composable(AppRoutes.CURATOR_MAINSCREEN.name){
             CuradorZoneScreen(
                 noUserAction = { navController.navigate(AppRoutes.AUTH_SIGNIN.name){
@@ -150,9 +162,13 @@ fun AppNavigator() {
                 }
             }},
                 onAddInterestPointClick = {
-                    navController.navigate("camera")
+                    navController.navigate(AppRoutes.CURATOR_ADDPOI.name)
                 }
             )
+        }
+
+        composable(AppRoutes.CURATOR_ADDPOI.name){
+            CuratorAddPoIScreen({ navController.navigateUp() })
         }
 
         composable(AppRoutes.AUTH_SIGNIN.name){
@@ -267,7 +283,7 @@ fun DetailScreen(navController: NavController) {
             ) {
 
                 Buttons.ImageButton(R.drawable.leisure, "Lazer",160.dp,160.dp) {
-                    navController.navigate("camera")
+                    navController.navigate(AppRoutes.LAZER_SCREEN.name)
                     // Handle button click
                     Log.d("ImageButton", "Lazer Button Clicked!")
                 }

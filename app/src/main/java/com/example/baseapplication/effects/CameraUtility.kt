@@ -5,7 +5,7 @@ import android.os.Build
 import android.provider.MediaStore
 
 class CameraUtility(private val context: Context) {
-    var imageUri: Uri? = null
+    var imageUri: Uri? = createImageUri()
 
     fun createImageUri(): Uri? {
         val contentValues = ContentValues().apply {
