@@ -139,9 +139,10 @@ fun AppNavigator() {
             SignUpScreen(popUpScreen = { navController.navigateUp() })
         }
 
-        composable("map/{address}") { backStackEntry ->
-            val address = backStackEntry.arguments?.getString("address") ?: ""
-            MapScreen().GetMapByAddress(address)
+        composable("map/{latitude}/{longitude}") { backStackEntry ->
+            val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull() ?: 0.0
+            val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull() ?: 0.0
+            MapScreen().GetMapByLocation(latitude, longitude)
         }
     }
 }

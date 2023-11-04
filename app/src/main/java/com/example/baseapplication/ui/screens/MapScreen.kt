@@ -44,85 +44,55 @@ import java.io.IOException
 class MapScreen {
 
     @Composable
-    fun GetMapByAddress(address: String) {
+    fun GetMapByLocation(latitude: Double, longitude: Double) {
 
         val context = LocalContext.current
-        val addressString = address
-        val geocoder = Geocoder(context)
-        var location by remember { mutableStateOf<LatLng?>(null) }
-        val pointsofinterest = remember { mutableStateOf<List<PointOfInterestModel>>(listOf()) }
+        var location by remember { mutableStateOf(LatLng(latitude, longitude)) }
+        val pointsOfInterest = remember { mutableStateOf<List<PointOfInterestModel>>(listOf()) }
 
         LaunchedEffect(Unit) {
             val firestore = Firebase.firestore
             firestore.collection("Points of Interest")
                 .get()
                 .addOnSuccessListener { documents ->
-                    pointsofinterest.value =
+                    pointsOfInterest.value =
                         documents.mapNotNull { it.toObject(PointOfInterestModel::class.java) }
                 }
         }
 
 
-        // Perform geocoding in a coroutine to avoid NetworkOnMainThreadException
-        LaunchedEffect(addressString) {
-            withContext(Dispatchers.IO) {
-                try {
-                    val addresses = geocoder.getFromLocationName(addressString, 1)
-                    if (addresses != null) {
-                        Log.d("Geocoding", "Addresses found: ${addresses.size}")
-                    } else {
-                        Log.d("Geocoding", "Addresses found: 0")
-
-                    }
-                    if (!addresses.isNullOrEmpty()) {
-                        val address = addresses[0]
-                        location = LatLng(address.latitude, address.longitude)
-                    } else {
-                        Log.d("Geocoding", "No addresses found for: $addressString")
-                    }
-                } catch (e: IOException) {
-                    e.printStackTrace()
-                }
-            }
+        val cameraPositionState = rememberCameraPositionState {
+            position = CameraPosition.fromLatLngZoom(location, 20f) // Set your desired zoom level
         }
 
-        var cameraPositionState: CameraPositionState? = null
+        GoogleMap(
+            modifier = Modifier.fillMaxSize(),
+            cameraPositionState = cameraPositionState
+        ) {
+            // Place a marker at the provided location
+            Marker(
+                state = MarkerState(position = location),
+                title = "Selected Location",
+                snippet = "Lat: $latitude, Long: $longitude"
+            )
 
-        if (location != null) {
-            cameraPositionState = rememberCameraPositionState {
-                position = CameraPosition.fromLatLngZoom(location!!, 20f)
-            }
-        }
-
-        if (cameraPositionState != null) {
-            GoogleMap(
-                modifier = Modifier.fillMaxSize(),
-                cameraPositionState = cameraPositionState
-            ) {
-                location?.let {
-                    Marker(
-                        state = MarkerState(position = it),
-                        title = "Local Pesquisado",
-                        snippet = addressString
-                    )
-                    pointsofinterest.value.forEach { pointofinterest ->
-                        Marker(
-                            state = MarkerState(
-                                position = LatLng(
-                                    pointofinterest.latitude,
-                                    pointofinterest.longitude
-                                )
-                            ),
-                            title = pointofinterest.name,
-                            snippet = pointofinterest.address
+            // Place additional points of interest if needed
+            pointsOfInterest.value.forEach { pointOfInterest ->
+                Marker(
+                    state = MarkerState(
+                        position = LatLng(
+                            pointOfInterest.latitude,
+                            pointOfInterest.longitude
                         )
-                    }
-                }
+                    ),
+                    title = pointOfInterest.name,
+                    snippet = pointOfInterest.address
+                )
             }
         }
-
     }
-        @Composable
+
+    @Composable
         fun MapScreen() {
             val context = LocalContext.current
             val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)

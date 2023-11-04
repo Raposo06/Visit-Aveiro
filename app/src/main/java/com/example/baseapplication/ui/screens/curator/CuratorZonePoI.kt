@@ -102,8 +102,7 @@ fun CuratorPoIItem(
                 )
 
                 Button(onClick = {
-                    val address = poi.address
-                    navController.navigate("map/$address")
+                    navController.navigate("map/${poi.latitude}/${poi.longitude}")
                 }) {
                     Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Go to location")
                     Text("  Location")
