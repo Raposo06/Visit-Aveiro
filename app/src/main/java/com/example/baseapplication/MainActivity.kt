@@ -45,11 +45,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.navigation.NavController
 import androidx.compose.runtime.*
-import androidx.navigation.NavType
-import androidx.navigation.navArgument
+
 import com.example.baseapplication.models.PointOfInterestTypeEnum
 import com.example.baseapplication.ui.screens.MapScreen
-import com.example.baseapplication.ui.screens.TakePhoto
 import com.example.baseapplication.ui.theme.Buttons
 import com.example.baseapplication.ui.screens.auth.SignInScreen
 import com.example.baseapplication.ui.screens.auth.SignUpScreen
@@ -96,7 +94,7 @@ fun AppNavigator() {
         }
 
         composable("maps"){
-            MapScreen().MapScreen()
+            MapScreen()
         }
 
 

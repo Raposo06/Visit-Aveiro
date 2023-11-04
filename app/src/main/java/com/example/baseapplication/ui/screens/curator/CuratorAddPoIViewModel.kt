@@ -37,10 +37,13 @@ class CuratorAddPoIViewModel: ViewModel() {
         Log.d(TAG, "onImgUrlChange")
         if(newValue==null){
             uiState.value=uiState.value.copy(errMsg = "No photo added!")
-        }else {
-            uiState.value = uiState.value.copy(localImageUri = newValue)
         }
+        uiState.value = uiState.value.copy(localImageUri = newValue)
+    }
 
+    fun onImgDelete() {
+        Log.d(TAG, "onImgDelete")
+        uiState.value = uiState.value.copy(localImageUri = null)
     }
 
     fun onLocationChange(newLat: Double, newLng: Double, newAddress: String){
