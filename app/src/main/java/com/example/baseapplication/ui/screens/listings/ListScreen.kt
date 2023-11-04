@@ -56,6 +56,12 @@ fun ListScreen(
     listType: PointOfInterestTypeEnum,
     navController: NavController
 ) {
+
+    var poiList:List<PointOfInterestModel> by remember{ mutableStateOf(listOf()) }
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
+
     Image(
         painter = painterResource(id = R.drawable.city_of_aveiro),
         contentDescription = "Background Image",
@@ -68,7 +74,7 @@ fun ListScreen(
             .fillMaxSize()
             .background(Color.Black.copy(alpha = 0.6f))
     )
-    var poiList:List<PointOfInterestModel> by remember{ mutableStateOf(listOf()) }
+
 
     LaunchedEffect(key1 = listType){
         FirebaseFirestore.getInstance().collection(PoICollection)
@@ -76,12 +82,14 @@ fun ListScreen(
             .get()
             .addOnSuccessListener { documents ->
                 poiList  = documents.mapNotNull { it.toObject(PointOfInterestModel::class.java) }
+                isLoading=false
             }
             .addOnFailureListener{ exception ->
                 Log.d(TAG, "Error getting documents: ", exception)
+                isLoading=false
             }
     }
-    if (poiList.isEmpty()) {
+    if(isLoading){
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -89,26 +97,41 @@ fun ListScreen(
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Ainda não existem pontos de interesse disponíveis.",
+                text = "A carregar...",
                 style = MaterialTheme.typography.displaySmall,
                 color = Color.White
             )
         }
-    }else{
-
-        Column(
-            Modifier
-                .verticalScroll(rememberScrollState())
-                .fillMaxWidth()
-        ) {
-            poiList.forEach {
-                ListItem(
-                    poi = it,
-                    onPoIClick = { },
-                    onGoToLocationClick = { },
-                    navController = navController
+    } else {
+        if (poiList.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Ainda não existem pontos de interesse disponíveis.",
+                    style = MaterialTheme.typography.displaySmall,
+                    color = Color.White
                 )
+            }
+        } else {
 
+            Column(
+                Modifier
+                    .verticalScroll(rememberScrollState())
+                    .fillMaxWidth()
+            ) {
+                poiList.forEach {
+                    ListItem(
+                        poi = it,
+                        onPoIClick = { },
+                        onGoToLocationClick = { },
+                        navController = navController
+                    )
+
+                }
             }
         }
     }
