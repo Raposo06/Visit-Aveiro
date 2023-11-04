@@ -31,6 +31,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.baseapplication.models.PointOfInterestModel
 
 
@@ -38,7 +40,8 @@ import com.example.baseapplication.models.PointOfInterestModel
 fun CuradorZoneScreen(
     noUserAction: () -> Unit,
     onAddInterestPointClick: () -> Unit,
-    viewModel: CuratorZoneViewModel = viewModel()
+    viewModel: CuratorZoneViewModel = viewModel(),
+    navController: NavController
 ) {
     val uiState by viewModel.uiState
 
@@ -62,6 +65,7 @@ fun CuradorZoneScreen(
         onGoToLocationClick = { Log.d("CuratorPoIItem","on location click") },
         onEditClick = viewModel::updatePoIEntry,
         onDeleteClick = viewModel::deletePoIEntry,
+        navController = navController
     )
 }
 
@@ -79,6 +83,7 @@ fun CuradorZoneContent(
     onGoToLocationClick: (PointOfInterestModel) -> Unit,
     onEditClick: (PointOfInterestModel) -> Unit,
     onDeleteClick: (PointOfInterestModel) -> Unit,
+    navController: NavController
 ) {
     //TopAppBar(title = { Text(text = "Zona Curador") })
     Column(
@@ -136,7 +141,8 @@ fun CuradorZoneContent(
                 onPoIClick = onPoIClick,
                 onGoToLocationClick = onGoToLocationClick,
                 onEditClick = onEditClick,
-                onDeleteClick= onDeleteClick
+                onDeleteClick= onDeleteClick,
+                navController = navController
                 )
         }
 
@@ -144,9 +150,11 @@ fun CuradorZoneContent(
 }
 
 
-
+/*
 @Preview
 @Composable
 fun CuratorZoneContentPreview() {
-    CuradorZoneContent("John Doe", { print("OnSignoutclick") }, listOf(),{ print("onAddInterestPointClick") } ,{}, {}, {}, {})
+    CuradorZoneContent("John Doe", { print("OnSignoutclick") }, listOf(),{ print("onAddInterestPointClick") } ,{}, {}, {}, {},)
 }
+
+ */

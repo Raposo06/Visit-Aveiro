@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -33,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.example.baseapplication.models.PointOfInterestModel
 
@@ -44,6 +46,7 @@ fun CuratorPoIItem(
     onGoToLocationClick: (PointOfInterestModel) -> Unit,
     onEditClick: (PointOfInterestModel) -> Unit,
     onDeleteClick: (PointOfInterestModel) -> Unit,
+    navController: NavController
 ) {
 
     var extended by remember {mutableStateOf(false)}
@@ -98,8 +101,12 @@ fun CuratorPoIItem(
                     modifier = Modifier.weight(1f),
                 )
 
-                Button(onClick = { onGoToLocationClick(poi) }) {
-                    Icon(imageVector = Icons.Default.ArrowForward, "Go to location")
+                Button(onClick = {
+                    val address = poi.address
+                    navController.navigate("map/$address")
+                }) {
+                    Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Go to location")
+                    Text("  Location")
                 }
 
 
@@ -132,7 +139,7 @@ fun CuratorPoIItem(
         }
     }
 }
-
+/*
 @Preview
 @Composable
 fun CuratorPoIItemPreview() {
@@ -146,3 +153,4 @@ fun CuratorPoIItemPreview() {
         latitude = 40.636413
     ), {}, {}, {}) {}
 }
+*/

@@ -1,11 +1,15 @@
 package com.example.baseapplication.ui.screens.listings
 
 import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -13,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -30,19 +35,39 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.baseapplication.R
 import com.example.baseapplication.consts.PoICollection
 import com.example.baseapplication.models.PointOfInterestModel
 import com.example.baseapplication.models.PointOfInterestTypeEnum
+import com.example.baseapplication.ui.screens.MapScreen
 import com.google.firebase.firestore.FirebaseFirestore
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 private val TAG = "ListScreen"
 @Composable
 fun ListScreen(
-    listType: PointOfInterestTypeEnum
+    listType: PointOfInterestTypeEnum,
+    navController: NavController
 ) {
+    Image(
+        painter = painterResource(id = R.drawable.city_of_aveiro),
+        contentDescription = "Background Image",
+        modifier = Modifier.fillMaxSize(),
+        contentScale = ContentScale.Crop // Crop the image to fill the screen
+    )
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f))
+    )
     var poiList:List<PointOfInterestModel> by remember{ mutableStateOf(listOf()) }
 
     LaunchedEffect(key1 = listType){
@@ -56,22 +81,37 @@ fun ListScreen(
                 Log.d(TAG, "Error getting documents: ", exception)
             }
     }
-
-    Column(
-        Modifier
-            .verticalScroll(rememberScrollState())
-            .fillMaxWidth()
-    ) {
-        poiList.forEach {
-            ListItem(
-                poi = it,
-                onPoIClick = { },
-                onGoToLocationClick = { },
+    if (poiList.isEmpty()) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "Ainda não existem pontos de interesse disponíveis.",
+                style = MaterialTheme.typography.displaySmall,
+                color = Color.White
             )
+        }
+    }else{
 
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .fillMaxWidth()
+        ) {
+            poiList.forEach {
+                ListItem(
+                    poi = it,
+                    onPoIClick = { },
+                    onGoToLocationClick = { },
+                    navController = navController
+                )
+
+            }
         }
     }
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -80,6 +120,7 @@ fun ListItem(
     poi: PointOfInterestModel,
     onPoIClick: (PointOfInterestModel) -> Unit,
     onGoToLocationClick: (PointOfInterestModel) -> Unit,
+    navController: NavController
 ) {
 
     var extended by remember { mutableStateOf(false) }
@@ -134,8 +175,12 @@ fun ListItem(
                     modifier = Modifier.weight(1f),
                 )
 
-                Button(onClick = { onGoToLocationClick(poi) }) {
-                    Icon(imageVector = Icons.Default.ArrowForward, "Go to location")
+                Button(onClick = {
+                    val address = poi.address
+                    navController.navigate("map/$address")
+                }) {
+                    Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Go to location")
+                    Text("  Location")
                 }
 
 
