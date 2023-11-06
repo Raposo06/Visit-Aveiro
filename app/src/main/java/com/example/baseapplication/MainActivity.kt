@@ -54,6 +54,7 @@ import com.example.baseapplication.ui.screens.auth.SignInScreen
 import com.example.baseapplication.ui.screens.auth.SignUpScreen
 import com.example.baseapplication.ui.screens.curator.CuradorZoneScreen
 import com.example.baseapplication.ui.screens.curator.CuratorAddPoIScreen
+import com.example.baseapplication.ui.screens.curator.CuratorEditScreen
 import com.example.baseapplication.ui.screens.listings.ListScreen
 import kotlinx.coroutines.*
 
@@ -125,11 +126,26 @@ fun AppNavigator() {
                 onGoToLocationClick = {
                     navController.navigate("${AppRoutes.MAP_SCREEN.name}/${it.latitude}/${it.longitude}")
                 },
+                onEditClick = {
+                    navController.navigate(AppRoutes.CURATOR_EDITPOI.name+"/${it.poi_uid}")
+                }
             )
         }
 
         composable(AppRoutes.CURATOR_ADDPOI.name){
-            CuratorAddPoIScreen({ navController.navigateUp() })
+            CuratorAddPoIScreen(
+                onSuccess = { navController.navigateUp() },
+            )
+        }
+
+        composable(AppRoutes.CURATOR_EDITPOI.name+"/{docId}"){
+            val docId = it.arguments?.getString("docId") ?: ""
+            CuratorEditScreen(
+                docId,
+                onSucess = {
+                    navController.navigateUp()
+                }
+            )
         }
 
         composable(AppRoutes.AUTH_SIGNIN.name){

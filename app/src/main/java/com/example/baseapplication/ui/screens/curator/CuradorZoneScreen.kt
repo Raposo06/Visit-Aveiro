@@ -33,12 +33,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.baseapplication.R
 import com.example.baseapplication.models.PointOfInterestModel
 
@@ -48,6 +45,7 @@ fun CuradorZoneScreen(
     noUserAction: () -> Unit,
     onAddInterestPointClick: () -> Unit,
     onGoToLocationClick: (PointOfInterestModel) -> Unit,
+    onEditClick: (PointOfInterestModel) -> Unit,
     viewModel: CuratorZoneViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState
@@ -68,9 +66,8 @@ fun CuradorZoneScreen(
         onAddInterestPointClick,
         // todo: howver dont think it needs to be implemented, there is no purpose
         onPoIClick = {Log.d("CuratorPoIItem","on poi click")},
-        //todo
         onGoToLocationClick = onGoToLocationClick,
-        onEditClick = viewModel::updatePoIEntry,
+        onEditClick = onEditClick,
         onDeleteClick = viewModel::deletePoIEntry,
     )
 }

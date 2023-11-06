@@ -9,7 +9,6 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.toObject
 
 class CuratorZoneViewModel : ViewModel() {
     private val TAG = "CuratorScreenViewModel"
@@ -51,7 +50,7 @@ class CuratorZoneViewModel : ViewModel() {
 
 
                     val poilist =
-                        value?.documents?.mapNotNull { it.toObject(PointOfInterestModel::class.java) }?: listOf()
+                        value.documents.mapNotNull { it.toObject(PointOfInterestModel::class.java) }
 
                     uiState.value=uiState.value.copy(points = poilist)
                 }
@@ -67,25 +66,6 @@ class CuratorZoneViewModel : ViewModel() {
 
     fun onSignOutClick() {
         firebaseAuth.signOut()
-    }
-
-    fun getEntries() {
-        firestore.collection(PoICollection)
-            .whereEqualTo("uid", uiState.value.user?.uid)
-            .get()
-            .addOnSuccessListener { documents ->
-                val pointsofinterest  = documents.mapNotNull { it.toObject(PointOfInterestModel::class.java) }
-                uiState.value=uiState.value.copy(points = pointsofinterest)
-            }
-            .addOnFailureListener{ exception ->
-                Log.d(TAG, "Error getting documents: ", exception)
-            }
-    }
-
-    //todo
-    fun updatePoIEntry(poi: PointOfInterestModel) {
-        //firestore.collection(PoICollection).document(poi.poi_uid)
-        getEntries()
     }
 
     fun deletePoIEntry(poi: PointOfInterestModel) {
