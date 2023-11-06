@@ -1,7 +1,10 @@
 package com.example.baseapplication.ui.screens.curator
 
 import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -27,12 +30,16 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.example.baseapplication.R
 import com.example.baseapplication.models.PointOfInterestModel
 
 
@@ -40,8 +47,8 @@ import com.example.baseapplication.models.PointOfInterestModel
 fun CuradorZoneScreen(
     noUserAction: () -> Unit,
     onAddInterestPointClick: () -> Unit,
+    onGoToLocationClick: (PointOfInterestModel) -> Unit,
     viewModel: CuratorZoneViewModel = viewModel(),
-    navController: NavController
 ) {
     val uiState by viewModel.uiState
 
@@ -62,10 +69,9 @@ fun CuradorZoneScreen(
         // todo: howver dont think it needs to be implemented, there is no purpose
         onPoIClick = {Log.d("CuratorPoIItem","on poi click")},
         //todo
-        onGoToLocationClick = { Log.d("CuratorPoIItem","on location click") },
+        onGoToLocationClick = onGoToLocationClick,
         onEditClick = viewModel::updatePoIEntry,
         onDeleteClick = viewModel::deletePoIEntry,
-        navController = navController
     )
 }
 
@@ -83,8 +89,18 @@ fun CuradorZoneContent(
     onGoToLocationClick: (PointOfInterestModel) -> Unit,
     onEditClick: (PointOfInterestModel) -> Unit,
     onDeleteClick: (PointOfInterestModel) -> Unit,
-    navController: NavController
 ) {
+    Image(
+        painter = painterResource(id = R.drawable.city_of_aveiro),
+        contentDescription = "Background Image",
+        modifier = Modifier.fillMaxSize(),
+        contentScale = ContentScale.Crop
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.6f))
+    )
     //TopAppBar(title = { Text(text = "Zona Curador") })
     Column(
         Modifier
@@ -142,7 +158,6 @@ fun CuradorZoneContent(
                 onGoToLocationClick = onGoToLocationClick,
                 onEditClick = onEditClick,
                 onDeleteClick= onDeleteClick,
-                navController = navController
                 )
         }
 

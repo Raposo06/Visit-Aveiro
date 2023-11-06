@@ -46,7 +46,6 @@ fun CuratorPoIItem(
     onGoToLocationClick: (PointOfInterestModel) -> Unit,
     onEditClick: (PointOfInterestModel) -> Unit,
     onDeleteClick: (PointOfInterestModel) -> Unit,
-    navController: NavController
 ) {
 
     var extended by remember {mutableStateOf(false)}
@@ -102,7 +101,7 @@ fun CuratorPoIItem(
                 )
 
                 Button(onClick = {
-                    navController.navigate("map/${poi.latitude}/${poi.longitude}")
+                    onGoToLocationClick(poi)
                 }) {
                     Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Go to location")
                     Text("  Location")

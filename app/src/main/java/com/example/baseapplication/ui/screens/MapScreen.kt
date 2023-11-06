@@ -3,16 +3,21 @@ package com.example.baseapplication.ui.screens
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.pm.PackageManager
-import android.location.Geocoder
 import android.os.Looper
 import android.util.Log
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
@@ -37,14 +42,15 @@ import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
 import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.IOException
 
 class MapScreen {
 
     @Composable
-    fun GetMapByLocation(latitude: Double, longitude: Double) {
+    fun GetMapByLocation(
+        latitude: Double,
+        longitude: Double,
+        onImmersiveCameraClick: () -> Unit,
+    ) {
 
         val context = LocalContext.current
         var location by remember { mutableStateOf(LatLng(latitude, longitude)) }
@@ -64,32 +70,44 @@ class MapScreen {
         val cameraPositionState = rememberCameraPositionState {
             position = CameraPosition.fromLatLngZoom(location, 20f) // Set your desired zoom level
         }
-
-        GoogleMap(
-            modifier = Modifier.fillMaxSize(),
-            cameraPositionState = cameraPositionState
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            // Place a marker at the provided location
-            Marker(
-                state = MarkerState(position = location),
-                title = "Selected Location",
-                snippet = "Lat: $latitude, Long: $longitude"
-            )
-
-            // Place additional points of interest if needed
-            pointsOfInterest.value.forEach { pointOfInterest ->
+            GoogleMap(
+                modifier = Modifier.fillMaxSize().weight(1f),
+                cameraPositionState = cameraPositionState
+            ) {
+                // Place a marker at the provided location
                 Marker(
-                    state = MarkerState(
-                        position = LatLng(
-                            pointOfInterest.latitude,
-                            pointOfInterest.longitude
-                        )
-                    ),
-                    title = pointOfInterest.name,
-                    snippet = pointOfInterest.address
+                    state = MarkerState(position = location),
+                    title = "Selected Location",
+                    snippet = "Lat: $latitude, Long: $longitude"
                 )
+
+                // Place additional points of interest if needed
+                /*pointsOfInterest.value.forEach { pointOfInterest ->
+                    Marker(
+                        state = MarkerState(
+                            position = LatLng(
+                                pointOfInterest.latitude,
+                                pointOfInterest.longitude
+                            )
+                        ),
+                        title = pointOfInterest.name,
+                        snippet = pointOfInterest.address
+                    )
+                }*/
+            }
+
+            Button(
+                modifier = Modifier.fillMaxWidth(),
+                shape = MaterialTheme.shapes.medium,
+                onClick = onImmersiveCameraClick,
+            ) {
+                Text(text = "Usar navegacao imersiva")
             }
         }
+
     }
 
     @Composable

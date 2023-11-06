@@ -41,6 +41,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.example.baseapplication.AppRoutes
 import com.example.baseapplication.R
 import com.example.baseapplication.consts.PoICollection
 import com.example.baseapplication.models.PointOfInterestModel
@@ -199,7 +200,7 @@ fun ListItem(
                 )
 
                 Button(onClick = {
-                    navController.navigate("map/${poi.latitude}/${poi.longitude}")
+                    navController.navigate("${AppRoutes.MAP_SCREEN.name}/${poi.latitude}/${poi.longitude}")
                 }) {
                     Icon(imageVector = Icons.Default.LocationOn, contentDescription = "Go to location")
                     Text("  Location")

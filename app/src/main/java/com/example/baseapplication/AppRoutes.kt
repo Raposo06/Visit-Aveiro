@@ -13,4 +13,7 @@ enum class AppRoutes {
     // CURATOR SCREENS
     CURATOR_MAINSCREEN,
     CURATOR_ADDPOI,
+
+    MAP_SCREEN,
+    IMMERSIVE_CAMERA,
 }

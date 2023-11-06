@@ -7,7 +7,6 @@ import android.location.Geocoder
 import android.net.Uri
 import android.util.Log
 import android.widget.Toast
-import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import coil.compose.AsyncImage
+import com.example.baseapplication.utlis.PermissionLauncerFactory
 import com.example.baseapplication.models.PointOfInterestTypeEnum
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.android.gms.location.LocationServices
@@ -279,19 +279,3 @@ fun CuratorAddPoIContent(
         }
     }
 }
-
-@Composable
-fun PermissionLauncerFactory(onSuccess: () -> Unit): ManagedActivityResultLauncher<String, Boolean> {
-    val context = LocalContext.current
-    return rememberLauncherForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) {
-        if (it) {
-            Toast.makeText(context, "Permission Granted", Toast.LENGTH_SHORT).show()
-            onSuccess()
-        } else {
-            Toast.makeText(context, "Permission Denied", Toast.LENGTH_SHORT).show()
-        }
-    }
-}
-

@@ -47,6 +47,7 @@ import androidx.navigation.NavController
 import androidx.compose.runtime.*
 
 import com.example.baseapplication.models.PointOfInterestTypeEnum
+import com.example.baseapplication.ui.screens.ImmersiveCameraScreen
 import com.example.baseapplication.ui.screens.MapScreen
 import com.example.baseapplication.ui.theme.Buttons
 import com.example.baseapplication.ui.screens.auth.SignInScreen
@@ -94,7 +95,7 @@ fun AppNavigator() {
         }
 
         composable("maps"){
-            MapScreen()
+            MapScreen().MapScreen()
         }
 
 
@@ -110,8 +111,6 @@ fun AppNavigator() {
             ListScreen(listType = PointOfInterestTypeEnum.Gastronomia, navController = navController)
         }
 
-        // todo create routes for the other list types
-
         composable(AppRoutes.CURATOR_MAINSCREEN.name){
             CuradorZoneScreen(
                 noUserAction = { navController.navigate(AppRoutes.AUTH_SIGNIN.name){
@@ -123,7 +122,9 @@ fun AppNavigator() {
                     navController.navigate(AppRoutes.CURATOR_ADDPOI.name)
                 },
 
-                navController = navController
+                onGoToLocationClick = {
+                    navController.navigate("${AppRoutes.MAP_SCREEN.name}/${it.latitude}/${it.longitude}")
+                },
             )
         }
 
@@ -139,10 +140,21 @@ fun AppNavigator() {
             SignUpScreen(popUpScreen = { navController.navigateUp() })
         }
 
-        composable("map/{latitude}/{longitude}") { backStackEntry ->
+        composable("${AppRoutes.MAP_SCREEN.name}/{latitude}/{longitude}") { backStackEntry ->
             val latitude = backStackEntry.arguments?.getString("latitude")?.toDoubleOrNull() ?: 0.0
             val longitude = backStackEntry.arguments?.getString("longitude")?.toDoubleOrNull() ?: 0.0
-            MapScreen().GetMapByLocation(latitude, longitude)
+            MapScreen().GetMapByLocation(
+                latitude,
+                longitude
+            ) {
+                navController.navigate("${AppRoutes.IMMERSIVE_CAMERA.name}/$latitude/$longitude" )
+            }
+        }
+
+        composable(AppRoutes.IMMERSIVE_CAMERA.name+"/{latitude}/{longitude}"){
+            val latitude = it.arguments?.getString("latitude")?.toDoubleOrNull() ?: 0.0
+            val longitude = it.arguments?.getString("longitude")?.toDoubleOrNull() ?: 0.0
+            ImmersiveCameraScreen(latitude = latitude, longitude = longitude, false) { navController.navigateUp() }
         }
     }
 }
