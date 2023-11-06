@@ -142,7 +142,7 @@ fun ImmersiveCameraScreen(
                     shape = MaterialTheme.shapes.medium,
                     onClick = onStopImmersiveCamera,
                 ) {
-                    Text(text = "Parar navegacao imersiva")
+                    Text(text = "Parar navegação imersiva")
                 }
             }
 
@@ -151,7 +151,7 @@ fun ImmersiveCameraScreen(
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(text = "Esta funcionalidade requer as seguintes permissoes:")
+                Text(text = "Esta funcionalidade requer as seguintes permissões:")
                 if (!hasCameraPermission) {
                     Text(text = " - Camera")
                 }
