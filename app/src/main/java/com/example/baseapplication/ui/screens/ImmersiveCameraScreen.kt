@@ -1,6 +1,8 @@
 package com.example.baseapplication.ui.screens
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.location.Location
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,6 +18,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -23,8 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.example.baseapplication.utlis.PermissionLauncerFactory
 import com.example.baseapplication.R
 import com.example.baseapplication.ui.components.ImmersiveCamera
@@ -45,11 +50,13 @@ fun ImmersiveCameraScreen(
     verbose: Boolean = false,
     onStopImmersiveCamera: () -> Unit,
 ) {
+    val context = LocalContext.current
+
     var hasCameraPermission by remember {
-        mutableStateOf(false)
+        mutableStateOf((ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA)==PackageManager.PERMISSION_GRANTED))
     }
     var hasLocationPermission by remember {
-        mutableStateOf(false)
+        mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)==PackageManager.PERMISSION_GRANTED)
     }
 
     val cameraPermissionLauncher = PermissionLauncerFactory {
@@ -62,10 +69,10 @@ fun ImmersiveCameraScreen(
 
     val onRequestPermission = {
         if (!hasCameraPermission) {
-            cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
         if (!hasLocationPermission) {
-            locationPermissionLauncher.launch(android.Manifest.permission.ACCESS_FINE_LOCATION)
+            locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
         }
     }
 
