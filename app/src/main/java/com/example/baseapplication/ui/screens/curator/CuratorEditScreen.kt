@@ -110,8 +110,8 @@ fun CuratorEditScreen(
         ) {
             isUpdatingPoI=true
             viewModel.submitPoI {
-                isUpdatingPoI = false
                 Toast.makeText(context, "Ponto de Interesse atualizado", Toast.LENGTH_SHORT).show()
+                isUpdatingPoI = false
                 onSucess()
             }
 

@@ -1,4 +1,4 @@
-package com.example.baseapplication.ui.screens
+package com.example.baseapplication.ui.screens.mapping
 
 import android.Manifest
 import android.annotation.SuppressLint

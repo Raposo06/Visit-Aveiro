@@ -202,7 +202,6 @@ fun CuratorAddPoIContent(
     }
 
     val onAddLocationClick = {
-
         val permissionCheckResult =
             ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION)
         if (permissionCheckResult == PackageManager.PERMISSION_GRANTED) {

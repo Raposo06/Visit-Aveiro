@@ -128,7 +128,7 @@ fun ImmersiveCamera(
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
                 Text(
-                    text = "Distancia:  ${currLocation.distanceTo(targetLocation)} metros",
+                    text = "Distancia: %.1f metros".format(currLocation.distanceTo(targetLocation)),
                     textAlign = TextAlign.Center,
                 )
             }
